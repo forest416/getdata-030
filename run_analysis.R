@@ -1,6 +1,7 @@
 
 setwd("C:/Users/jin/Desktop/clean.data/FUCI/UCI HAR Dataset")
 
+library(data.table)
 ## read all input files
 
 test_y=read.csv('test/y_test.txt',header=F)
@@ -28,10 +29,10 @@ names(feature )= c("featureNo", "featureName")
 
 ## read observation file
 test_x=read.fwf('test/X_test.txt',rep(16,featureCount))
-names(test_x) = feature$featureName
+#names(test_x) = feature$featureName
 
 train_x=read.fwf('train/X_train.txt',rep(16,featureCount))
-names(train_x) = feature$featureName
+#names(train_x) = feature$featureName
 
 
 ## replace  activityNo to ActivityName
@@ -52,7 +53,14 @@ result=rbind(test,train)
 write.table(result, file="result.ALL.txt", row.name=FALSE, quote=TRUE)
 
 # mean by activity and subject
-step5=(aggregate(. ~   Activity +subject, data=result,FUN=mean))
+#step5=(aggregate(. ~   Activity +subject, data=data.table(result),FUN=mean))
 write.table(step5, file="step5.txt", row.name=FALSE, quote=TRUE)
 
 
+step5=dcast(melt(result, id=c("Activity", "subject")), Activity + subject ~ variable, mean)
+
+le=step5[1:2]
+ri=step5[3:563]
+names(ri) <- feature$featureName
+step5=cbind(le,ri)
+write.table(step5, file="step5.txt", row.name=FALSE, quote=TRUE)
